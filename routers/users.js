@@ -27,4 +27,10 @@ router.put(
   userController.update
 );
 
+router.delete(
+  "/delete/:id",
+  passport.authenticate("jwt", { session: false }),
+  userController.destroy
+);
+
 module.exports = router;
