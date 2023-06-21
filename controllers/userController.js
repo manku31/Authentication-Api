@@ -13,7 +13,7 @@ module.exports.register = async function (req, res, next) {
 
     const user = await User.create(req.body);
 
-    const token = jwt.sign({ id: user._id }, process.env.jwtSecretKey, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
       expiresIn: "1d",
     });
     return res.status(200).json({
@@ -35,7 +35,7 @@ module.exports.login = async function (req, res) {
     const user = await User.findOne({ email: req.body.email });
 
     if (user && user.password === req.body.password) {
-      const token = jwt.sign({ id: user._id }, process.env.jwtSecretKey, {
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
         expiresIn: "1d",
       });
       return res.status(200).json({
@@ -56,6 +56,7 @@ module.exports.login = async function (req, res) {
   }
 };
 
+// login user and see other user who register
 module.exports.allUsers = async function (req, res) {
   try {
     const users = await User.find({}, "firstName lastName email phone");
@@ -68,6 +69,7 @@ module.exports.allUsers = async function (req, res) {
   }
 };
 
+// User Profile
 module.exports.profile = async function (req, res) {
   try {
     const user = await User.findOne({ _id: req.params.id });
@@ -80,6 +82,7 @@ module.exports.profile = async function (req, res) {
   }
 };
 
+// User Can Update the Profile
 module.exports.update = async function (req, res) {
   try {
     await User.findByIdAndUpdate(req.params.id, req.body, {
@@ -88,6 +91,28 @@ module.exports.update = async function (req, res) {
 
     return res.send({
       message: "User updated successfully.",
+    });
+  } catch (err) {
+    console.log("******", err);
+    return res.status(400).json({
+      message: err.message,
+    });
+  }
+};
+
+// Delete the User
+module.exports.destroy = async function (req, res) {
+  try {
+    const user = await User.findByIdAndRemove(req.params.id).then((data) => {
+      if (!data) {
+        return res.status(404).send({
+          message: "User not found."
+        });
+      } else {
+        return res.send({
+          message: "User deleted successfully!",
+        });
+      }
     });
   } catch (err) {
     console.log("******", err);

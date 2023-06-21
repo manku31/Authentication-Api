@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 // connect mongoose to mongodb
-mongoose.connect("mongodb://localhost:27017/Authentication_Api");
+mongoose.connect("mongodb://localhost:27017/api");
 
 const db = mongoose.connection;
 
