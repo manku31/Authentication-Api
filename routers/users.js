@@ -2,12 +2,14 @@ const express = require("express");
 const router = express.Router();
 const validator = require("../validators/UserValidator");
 const passport = require("passport");
+const { body } = require("express-validator");
+const User = require("../models/User");
 
 const userController = require("../controllers/userController");
 
 router.post("/register", validator.signUp(), userController.register);
 
-router.post("/login", userController.login);
+router.post("/login", validator.logIn(), userController.login);
 
 router.get(
   "/allusers",

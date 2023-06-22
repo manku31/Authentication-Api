@@ -6,11 +6,11 @@ require("dotenv").config();
 // register the user
 module.exports.register = async function (req, res, next) {
   try {
-    const errors = validationResult(req.body);
+    const errors = validationResult(req);
     if (!errors.isEmpty()) {
       throw new Error(errors.array()[0].msg);
     }
-
+    
     const user = await User.create(req.body);
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
@@ -30,27 +30,44 @@ module.exports.register = async function (req, res, next) {
 };
 
 // login the user and send the jwt token
-module.exports.login = async function (req, res) {
+module.exports.login = async function (req, res, next) {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      throw new Error(errors.array()[0].msg);
+    }
+
     const user = await User.findOne({ email: req.body.email });
 
-    if (user && user.password === req.body.password) {
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
-        expiresIn: "1d",
-      });
-      return res.status(200).json({
-        success: "true",
-        message: "Sign in successfully",
-        token: token,
-      });
-    } else {
-      return res.status(401).json({
-        success: "false",
-        message: "Invalid username and password",
-      });
-    }
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
+      expiresIn: "1d",
+    });
+
+    return res.status(200).json({
+      success: "true",
+      message: "Sign in successfully",
+      token: token,
+    });
+
+    // const user = await User.findOne({ email: req.body.email });
+
+    // if (user && user.password === req.body.password) {
+    //   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
+    //     expiresIn: "1d",
+    //   });
+    //   return res.status(200).json({
+    //     success: "true",
+    //     message: "Sign in successfully",
+    //     token: token,
+    //   });
+    // } else {
+    //   return res.status(401).json({
+    //     success: "false",
+    //     message: "Invalid username and password",
+    //   });
+    // }
   } catch (err) {
-    return res.status(500).json({
+    return res.status(400).json({
       message: err.message,
     });
   }
@@ -106,7 +123,7 @@ module.exports.destroy = async function (req, res) {
     const user = await User.findByIdAndRemove(req.params.id).then((data) => {
       if (!data) {
         return res.status(404).send({
-          message: "User not found."
+          message: "User not found.",
         });
       } else {
         return res.send({
